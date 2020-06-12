@@ -15,46 +15,50 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class CarService {
 
     private final CarRepository carRepository;
-    private CategoryRepository categoryRepository;
-    private TagRepository tagRepository;
+    private final CategoryRepository categoryRepository;
+    private final TagRepository tagRepository;
+    private final Utility utility;
 
-    public CarService(CarRepository carRepository, CategoryRepository categoryRepository, TagRepository tagRepository) {
+    public CarService(CarRepository carRepository, CategoryRepository categoryRepository,
+                      TagRepository tagRepository, Utility utility) {
         this.carRepository = carRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
+        this.utility = utility;
     }
 
 
     public List<CarDto> getCars(){
-        List<CarDto> carDtos = new ArrayList<>();
-        List<Car> cars =  carRepository.findAll();
-        for(Car car: cars){
-            carDtos.add(new CarDto(car));
-        }
-        return carDtos;
+        return carRepository.getAllCars();
     }
 
     public CarDto getCar(String engineNumber){
-        Optional<Car> car = carRepository.findByEngineNumber(engineNumber);
-        if(!car.isPresent()){
+        Optional<CarDto> carDto = carRepository.getCar(engineNumber);
+        if(!carDto.isPresent()){
             throw new ResourceNotFoundException("Invalid engine Number : " + engineNumber);
         }
-        return new CarDto(car.get());
+        return carDto.get();
 
     }
 
 
-    public ResponseEntity<CarDto> saveCar(CarRequest carRequest, HttpServletRequest request){
+    public ResponseEntity<CarDto> saveCar(CarRequest carRequest){
         Set<Tag> tags;
         Set<Category> categories;
 
+        Car carResponse = carRepository.findByNameLike(carRequest.getName());
+        if (carResponse != null ){
+            throw new ResourceNotFoundException("CAR already exist ");
+        }
         if (carRequest.getName() != null && carRequest.getCategoryIds() == null &&
                 carRequest.getTagIds() == null && carRequest.getColor() == null &&
                 carRequest.getDescription() == null && carRequest.getImages() == null
@@ -62,7 +66,6 @@ public class CarService {
             Car car =  carRepository.findByNameLike(carRequest.getName());
             car.setName(carRequest.getName());
             Car resp = carRepository.save(car);
-            int b = 4;
         }
 
         tags = tagRepository.findByIdIn(carRequest.getTagIds());
@@ -78,12 +81,9 @@ public class CarService {
         car.setDescription(carRequest.getDescription());
         car.setTags(tags);
         car.setCategories(categories);
-        //String imgPath =  Utility.scanImageFile(carRequest.getImages());
-        Map<String, String> imgPath =  Utility.createImageAndAddPathToMap(carRequest.getImages());
+        Map<String, String> imgPath =  utility.createImageAndAddPathToMap(carRequest.getImages());
         car.setImages(imgPath);
         CarDto carDto = new CarDto(carRepository.save(car));
-
-        //HttpHeaders responseHeaders = new HttpHeaders();
         return new ResponseEntity<>(carDto, HttpStatus.CREATED);
     }
 
@@ -136,11 +136,12 @@ public class CarService {
             throw new ResourceNotFoundException("Car with Engine Number : " + id +" does not exist");
         }
 
-        Map<String, String> newImage = Utility.createImageAndAddPathToMap(imageRequest.getImages());
         if (car.get().getImages().size() < 1){
-            car.get().setImages(Utility.createImageAndAddPathToMap());
+            car.get().setImages(utility.createImageAndAddPathToMap());
         }else {
+            Map<String, String> newImage = utility.createImageAndAddPathToMap(imageRequest.getImages());
             newImage.forEach((k, v) -> car.get().getImages().put(k, v));
+
         }
        return new ResponseEntity<>(new CarDto(carRepository.save(car.get())), HttpStatus.OK);
     }
@@ -155,7 +156,7 @@ public class CarService {
             throw new ResourceNotFoundException("Image Id: " +imageId +"does not exist");
         }
 
-        if(!Utility.deleteImage(imageTobeRemoved)){
+        if(!utility.deleteImage(imageTobeRemoved)){
             throw new ResourceNotFoundException("Image could not be deleted from path");
         }
         car.get().getImages().remove(imageTobeRemoved);

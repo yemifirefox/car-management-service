@@ -18,6 +18,7 @@ public class CarDto implements Serializable {
     private Map<String, String> images = new HashMap<>();
     private String description;
 
+
     public CarDto(Car car) {
         name = car.getName();
         engineNumber = car.getEngineNumber();
@@ -78,43 +79,5 @@ public class CarDto implements Serializable {
         this.description = description;
     }
 
-//    @JsonIgnore
-//    public CarDto mapToCarDto(Car car){
-//        Set<CategoryDto> categoryDtos = new HashSet<>();
-//        Set<TagDto> tagDtos = new HashSet<>();
-//        this.setName(car.getName());
-//        //this.setImages(car.getImages());
-//        this.setEngineNumber(car.getEngineNumber());
-//
-//        for (Category category : car.getCategories()){
-//
-//            categoryDtos.add(new CategoryDto(category.getId(), category.getName()));
-//        }
-//        this.setCategories(categoryDtos);
-//        for (Tag tag : car.getTags()){
-//            tagDtos.add(new TagDto(tag.getId(), tag.getName()));
-//        }
-//        this.setTags(tagDtos);
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//        try {
-//
-//            // convert JSON string to Map
-//            Map<String, String> map = mapper.readValue(car.getImages(), Map.class);
-//            for(Map.Entry<String, String> entry : map.entrySet()){
-//                String imagePath = entry.getValue();
-//                entry.setValue(Utility.convertImageToBase64(imagePath));
-//            }
-//            // it works
-//            //Map<String, String> map = mapper.readValue(json, new TypeReference<Map<String, String>>() {});
-//
-//            this.setImages(map);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        //this.setCategories();
-//        return this;
-//    }
+
 }

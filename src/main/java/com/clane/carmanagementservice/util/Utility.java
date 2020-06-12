@@ -5,6 +5,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.nio.file.DirectoryNotEmptyException;
@@ -16,32 +18,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+@Component
 public class Utility {
 
+    @Value("${HOME_DIR}")
+    private String homeDir;
     private static final Logger LOGGER = LoggerFactory.getLogger(Utility.class);
 
-    private static String getFileExtension(String string) {
-        switch (string) {//check image's extension
-            case "data:image/jpeg;base64":
-                return "jpeg";
-            case "data:image/png;base64":
-                return "png";
-            case "data:application/pdf;base64":
-                return "pdf";
-        }
-        return null;
-    }
-
-
-
-
-    private static String generate4Random(){
+    private  String generate4Random(){
         Random random = new Random();
         String randomNumber = String.format("%04d", random.nextInt(1001));
         return randomNumber;
     }
 
-    public static String createImage(String base64String){
+    public  String createImage(String base64String){
 
         String path = "";
         String[] strings = base64String.split(",");
@@ -54,18 +44,16 @@ public class Utility {
                 case "data:image/png;base64":
                     extension = "png";
                     break;
-                default://should write cases for more images types
+                default:
                     extension = "jpg";
                     break;
             }
             String value = strings[1];
-            String rootPath = System.getProperty("user.home");
+            //String rootPath = System.getProperty("user.home");
+            String rootPath = System.getProperty(homeDir);
             File fileSaveDir = new File(rootPath + File.separator + "IMG");
             String pathName = fileSaveDir.getAbsolutePath() + File.separator;
-            //convert base64 string to binary data
-            //byte[] data = DatatypeConverter.parseBase64Binary(value);
             byte[] data = Base64.decodeBase64(value);
-            //String path = "C:\\Users\\Ene\\Desktop\\test_image." + extension;
             path = pathName + String.valueOf(new Date().getTime()) +"." + extension;
             File file = new File(path);
             try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
@@ -78,8 +66,8 @@ public class Utility {
         return path;
     }
 
-    public static Map<String, String> createImageAndAddPathToMap(String... base64Strings){
-        //String response = "";
+    public  Map<String, String> createImageAndAddPathToMap(String... base64Strings){
+
         Map<String, String> map = new HashMap<>();
         for (String base64String : base64Strings) {
             map.put(generate4Random(), createImage(base64String));;
@@ -87,7 +75,7 @@ public class Utility {
 
         return map;
     }
-    public static Boolean deleteImage(String path) {
+    public  Boolean deleteImage(String path) {
         boolean response = false;
         try
         {

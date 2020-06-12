@@ -4,7 +4,6 @@ import com.clane.carmanagementservice.model.Car;
 import com.clane.carmanagementservice.model.dto.CarDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,15 +14,13 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     Car findByNameLike(String carName);
 
-    @Query("select c.name from Car c WHERE c.name LIKE '%:name%'")
-    String findName(@Param("name") String carName);
-
-//    @Query("select c from Car c WHERE c.name LIKE '%:query%' or c.description LIKE '%:query%'")
+    @Query("select new com.clane.carmanagementservice.model.dto.CarDto(c) from Car c  join c.categories join c.tags ")
+    List<CarDto> getAllCars();
+    @Query("select new com.clane.carmanagementservice.model.dto.CarDto(c) from " +
+            "Car c  join c.categories join c.tags where c.engineNumber = ?1")
+    Optional<CarDto> getCar(String engineNumber);
 
     Optional<Car> findByEngineNumber(String engineNumber);
-
-    Car findByNameLikeOrDescriptionLikeOrCategoriesIsLikeOrTagsIsLike(String name, String desc, String categories, String tags);
-
 
 
     @Query("SELECT new com.clane.carmanagementservice.model.dto.CarDto(c) FROM Car c " +
@@ -34,8 +31,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     )
     List<CarDto> search(String query);
 
-    //@Query("select c from Car c WHERE c.name LIKE '%:query%'")
-    //List<Car> findByNameLike(@Param("query")String query);
 
 
 }
