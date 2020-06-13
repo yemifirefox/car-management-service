@@ -2,7 +2,6 @@ package com.clane.carmanagementservice.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Set;
@@ -10,7 +9,7 @@ import java.util.Set;
 public class CarRequest implements Serializable {
 
 
-    @NotEmpty(message = "name must not be empty")
+
     private String name;
     @NotNull
     private String description;

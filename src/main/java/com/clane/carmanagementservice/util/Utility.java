@@ -49,7 +49,6 @@ public class Utility {
                     break;
             }
             String value = strings[1];
-            //String rootPath = System.getProperty("user.home");
             String rootPath = System.getProperty(homeDir);
             File fileSaveDir = new File(rootPath + File.separator + "IMG");
             String pathName = fileSaveDir.getAbsolutePath() + File.separator;
@@ -63,6 +62,7 @@ public class Utility {
                 e.printStackTrace();
             }
         }
+        LOGGER.info("Image path: " +path);
         return path;
     }
 

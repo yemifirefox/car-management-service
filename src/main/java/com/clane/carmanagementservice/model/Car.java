@@ -36,18 +36,14 @@ public class Car implements Serializable{
     @Column(name = "engine_number")
     private String engineNumber;
 
-    @Column(name = "name")
+
     @NotEmpty(message = "name name must not be empty")
     private String name;
 
-    @Column(name = "description")
     private String description;
 
 
-
-    //@OneToMany(mappedBy = "car", fetch = FetchType.EAGER, cascade=CascadeType.PERSIST)
     @ManyToMany(
-            //mappedBy = "car",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY
     )
@@ -57,9 +53,7 @@ public class Car implements Serializable{
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
 
-    //@OneToMany(mappedBy = "car", fetch = FetchType.EAGER, cascade=CascadeType.PERSIST)
     @ManyToMany(
-            //mappedBy = "car",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY
     )
@@ -74,7 +68,6 @@ public class Car implements Serializable{
     @Type(type = "jsonb")
     private Map<String, String> images;
 
-    @Column(name = "color")
     private String color;
 
     public Car() {

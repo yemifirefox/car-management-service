@@ -11,6 +11,8 @@ import com.clane.carmanagementservice.repository.CarRepository;
 import com.clane.carmanagementservice.repository.CategoryRepository;
 import com.clane.carmanagementservice.repository.TagRepository;
 import com.clane.carmanagementservice.util.Utility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,8 @@ import java.util.Set;
 
 @Service
 public class CarService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CarService.class);
 
     private final CarRepository carRepository;
     private final CategoryRepository categoryRepository;
@@ -43,7 +47,8 @@ public class CarService {
 
     public CarDto getCar(String engineNumber){
         Optional<CarDto> carDto = carRepository.getCar(engineNumber);
-        if(!carDto.isPresent()){
+        if (!carDto.isPresent()){
+            LOGGER.info("Invalid engine Number : " + engineNumber);
             throw new ResourceNotFoundException("Invalid engine Number : " + engineNumber);
         }
         return carDto.get();
@@ -57,20 +62,23 @@ public class CarService {
 
         Car carResponse = carRepository.findByNameLike(carRequest.getName());
         if (carResponse != null ){
-            throw new ResourceNotFoundException("CAR already exist ");
+            LOGGER.info("CAR already exist");
+
+            throw new ResourceNotFoundException("CAR already exist");
         }
-        if (carRequest.getName() != null && carRequest.getCategoryIds() == null &&
+        /*if (carRequest.getName() != null && carRequest.getCategoryIds() == null &&
                 carRequest.getTagIds() == null && carRequest.getColor() == null &&
                 carRequest.getDescription() == null && carRequest.getImages() == null
         ) {
             Car car =  carRepository.findByNameLike(carRequest.getName());
             car.setName(carRequest.getName());
             Car resp = carRepository.save(car);
-        }
+        }*/
 
         tags = tagRepository.findByIdIn(carRequest.getTagIds());
         if (tags.size() != carRequest.getTagIds().size()) {
-            throw new ResourceNotFoundException("A selected tag not valid.");
+            LOGGER.info("selected tag not valid");
+            throw new ResourceNotFoundException("selected tag not valid.");
         }
         categories = categoryRepository.findByIdIn(carRequest.getCategoryIds());
 
@@ -130,7 +138,6 @@ public class CarService {
     }
 
     public ResponseEntity<CarDto> addImage(String id, CreateImageRequest imageRequest) {
-
         Optional<Car> car  = carRepository.findByEngineNumber(id);
         if (!car.isPresent()){
             throw new ResourceNotFoundException("Car with Engine Number : " + id +" does not exist");
@@ -141,22 +148,21 @@ public class CarService {
         }else {
             Map<String, String> newImage = utility.createImageAndAddPathToMap(imageRequest.getImages());
             newImage.forEach((k, v) -> car.get().getImages().put(k, v));
-
         }
        return new ResponseEntity<>(new CarDto(carRepository.save(car.get())), HttpStatus.OK);
     }
 
     public ResponseEntity<CarDto> deleteImage(String engineNumber, String imageId) {
         Optional<Car> car  = carRepository.findByEngineNumber(engineNumber);
-        if(!car.isPresent()){
+        if (!car.isPresent()){
             throw new ResourceNotFoundException("Car with Engine Number : " + engineNumber +" does not exist");
         }
         String imageTobeRemoved = car.get().getImages().get(imageId);
-        if(imageTobeRemoved == null){
+        if (imageTobeRemoved == null){
             throw new ResourceNotFoundException("Image Id: " +imageId +"does not exist");
         }
 
-        if(!utility.deleteImage(imageTobeRemoved)){
+        if (!utility.deleteImage(imageTobeRemoved)){
             throw new ResourceNotFoundException("Image could not be deleted from path");
         }
         car.get().getImages().remove(imageTobeRemoved);
