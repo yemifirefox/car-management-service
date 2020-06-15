@@ -11,6 +11,7 @@ import javax.persistence.Table;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +68,12 @@ public class Car implements Serializable{
     @Column(name = "images", columnDefinition = "jsonb")
     @Type(type = "jsonb")
     private Map<String, String> images;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "timestamps", nullable = false, updatable = false)
+    //@CreatedDate
+    private Date timestamps = new Date();
+
 
     private String color;
 

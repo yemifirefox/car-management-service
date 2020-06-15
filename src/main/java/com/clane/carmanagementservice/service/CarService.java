@@ -133,7 +133,9 @@ public class CarService {
     public ResponseEntity<List<CarDto>> search(String query) {
 
         List<CarDto> carDtos =  carRepository.search(query.toLowerCase());
-
+        if(carDtos.size() < 1){
+            throw new ResourceNotFoundException("No Search result ");
+        }
         return new ResponseEntity<>(carDtos, HttpStatus.OK);
     }
 
